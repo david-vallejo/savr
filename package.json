@@ -1,0 +1,26 @@
+{
+  "name": "savr",
+  "private": true,
+  "scripts": {
+    "web": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "web:preview": "pnpm --filter web preview",
+    "mobile": "pnpm --filter mobile start",
+    "mobile:ios": "pnpm --filter mobile ios",
+    "mobile:android": "pnpm --filter mobile android",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "env:encrypt": "node scripts/encrypt-env.js",
+    "env:decrypt": "node scripts/decrypt-env.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.2.0",
+      "react-dom": "19.2.0",
+      "@types/react": "19.2.2",
+      "@types/react-dom": "19.2.1"
+    }
+  }
+}

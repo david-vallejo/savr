@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Savr",
+    "slug": "savr",
+    "scheme": "savr",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#1A1512"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.savr.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1A1512"
+      },
+      "package": "app.savr.mobile"
+    }
+  }
+}
