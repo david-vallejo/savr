@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SavrMeals — Eat Smart. Pay Less.</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+--g: #2FBF71; --g-dark: #1a9a57; --g-light: #e8f9f0;
+--char: #1F2933; --cream: #F9F6F2; --orange: #FF8A3D;
+--orange-light: #fff3eb; --white: #ffffff;
+--text: #1F2933; --muted: #5a6a77; --border: rgba(31,41,51,0.12);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); background: var(--white); }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 64px; background: var(--white); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.logo { font-size: 22px; font-weight: 700; color: var(--g); letter-spacing: -0.5px; }
+.logo span { color: var(--orange); }
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a { font-size: 14px; color: var(--muted); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+.nav-links a:hover { color: var(--text); }
+.nav-cta { background: var(--g); color: white; padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: background 0.15s; }
+.nav-cta:hover { background: var(--g-dark); }
+.page { display: none; }
+.page.active { display: block; }
+
+.hero { background: linear-gradient(135deg, #1a2a1e 0%, #1F2933 60%, #0d1f14 100%); padding: 80px 32px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(47,191,113,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(255,138,61,0.08) 0%, transparent 50%); }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(47,191,113,0.15); border: 1px solid rgba(47,191,113,0.3); color: #6edda0; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 20px; margin-bottom: 24px; position: relative; }
+.hero h1 { font-size: 52px; font-weight: 700; color: white; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 16px; position: relative; }
+.hero h1 em { color: var(--g); font-style: normal; }
+.hero p { font-size: 18px; color: rgba(255,255,255,0.65); max-width: 520px; margin: 0 auto 32px; line-height: 1.6; position: relative; }
+.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; margin-bottom: 56px; }
+.btn-primary { background: var(--g); color: white; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; }
+.btn-primary:hover { background: var(--g-dark); transform: translateY(-1px); }
+.btn-secondary { background: rgba(255,255,255,0.08); color: white; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 500; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.15s; }
+.btn-secondary:hover { background: rgba(255,255,255,0.14); }
+.hero-stats { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; position: relative; }
+.stat { text-align: center; }
+.stat-num { font-size: 28px; font-weight: 700; color: white; }
+.stat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+.urgency { background: var(--orange); color: white; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.urgency strong { font-weight: 700; }
+.countdown { background: rgba(0,0,0,0.2); border-radius: 4px; padding: 2px 8px; font-weight: 700; font-family: monospace; font-size: 14px; }
+
+.section { padding: 72px 32px; }
+.section-alt { background: var(--cream); }
+.section-label { font-size: 12px; font-weight: 600; color: var(--g); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.section-title { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; line-height: 1.2; }
+.section-sub { font-size: 16px; color: var(--muted); max-width: 500px; line-height: 1.6; margin-bottom: 48px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+.step-card { background: white; border: 0.5px solid var(--border); border-radius: 16px; padding: 28px 24px; }
+.step-num { width: 36px; height: 36px; background: var(--g-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--g-dark); margin-bottom: 16px; }
+.step-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.step-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+.benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.benefit { display: flex; gap: 16px; align-items: flex-start; background: white; border-radius: 14px; padding: 24px; border: 0.5px solid var(--border); }
+.benefit-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.benefit h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.benefit p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.meal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.meal-card { background: white; border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+.meal-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.meal-img { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 52px; }
+.meal-info { padding: 16px; }
+.meal-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag-healthy { background: var(--g-light); color: var(--g-dark); }
+.tag-family { background: #fff3eb; color: #c26010; }
+.tag-budget { background: #eef3ff; color: #3455c7; }
+.tag-special { background: #fdf0fb; color: #9b3faa; }
+.meal-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.meal-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.meal-footer { display: flex; justify-content: space-between; align-items: center; }
+.meal-price { font-size: 17px; font-weight: 700; color: var(--g-dark); }
+.meal-original { font-size: 12px; color: var(--muted); text-decoration: line-through; margin-left: 6px; }
+.add-btn { width: 30px; height: 30px; background: var(--g); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; cursor: pointer; border: none; transition: background 0.15s; line-height: 1; }
+.add-btn:hover { background: var(--g-dark); }
+
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.filter-btn { background: var(--cream); border: 0.5px solid var(--border); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.15s; }
+.filter-btn.active, .filter-btn:hover { background: var(--g); color: white; border-color: var(--g); }
+
+.ai-section { background: var(--char); border-radius: 24px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.ai-section h2 { color: white; font-size: 30px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
+.ai-section p { color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
+.ai-features { display: flex; flex-direction: column; gap: 12px; }
+.ai-feat { display: flex; gap: 10px; align-items: center; font-size: 14px; color: rgba(255,255,255,0.8); }
+.ai-check { width: 20px; height: 20px; background: rgba(47,191,113,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--g); flex-shrink: 0; }
+.chat-widget { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; }
+.chat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.bot-avatar { width: 36px; height: 36px; background: var(--g); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.chat-name { font-size: 14px; font-weight: 600; color: white; }
+.chat-status { font-size: 11px; color: var(--g); }
+.chat-bubble { background: rgba(255,255,255,0.08); border-radius: 12px 12px 12px 2px; padding: 10px 14px; font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.5; margin-bottom: 10px; }
+.chat-bubble.user { background: var(--g); border-radius: 12px 12px 2px 12px; text-align: right; color: white; }
+.chat-suggestions { display: flex; gap: 6px; flex-wrap: wrap; }
+.chat-sug { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 5px 10px; border-radius: 12px; cursor: pointer; transition: all 0.15s; }
+.chat-sug:hover { background: rgba(47,191,113,0.15); border-color: rgba(47,191,113,0.4); color: #6edda0; }
+
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.price-card { background: white; border: 0.5px solid var(--border); border-radius: 20px; padding: 32px 28px; position: relative; }
+.price-card.featured { border: 2px solid var(--g); }
+.popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--g); color: white; font-size: 11px; font-weight: 600; padding: 4px 14px; border-radius: 20px; white-space: nowrap; }
+.plan-name { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+.plan-price { font-size: 38px; font-weight: 700; color: var(--text); letter-spacing: -1px; }
+.plan-price sup { font-size: 20px; vertical-align: super; }
+.plan-price sub { font-size: 14px; font-weight: 400; color: var(--muted); }
+.plan-savings { font-size: 12px; color: var(--g-dark); font-weight: 600; background: var(--g-light); display: inline-block; padding: 3px 10px; border-radius: 4px; margin: 8px 0 16px; }
+.plan-features { list-style: none; font-size: 14px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.plan-features li::before { content: '✓ '; color: var(--g); font-weight: 700; }
+.plan-btn { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+.plan-btn.primary { background: var(--g); color: white; }
+.plan-btn.primary:hover { background: var(--g-dark); }
+.plan-btn.outline { background: white; color: var(--text); border: 1.5px solid var(--border); }
+.plan-btn.outline:hover { border-color: var(--g); color: var(--g); }
+
+.testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.testimonial { background: white; border: 0.5px solid var(--border); border-radius: 16px; padding: 28px; }
+.stars { color: var(--orange); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
+.quote { font-size: 15px; color: var(--text); line-height: 1.6; margin-bottom: 16px; font-style: italic; }
+.author { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+.author-name { font-size: 14px; font-weight: 600; }
+.author-role { font-size: 12px; color: var(--muted); }
+
+.faq-item { border-bottom: 0.5px solid var(--border); }
+.faq-q { padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 15px; font-weight: 500; }
+.faq-a { font-size: 14px; color: var(--muted); line-height: 1.6; padding-bottom: 18px; display: none; }
+.faq-a.open { display: block; }
+.faq-arrow { font-size: 18px; color: var(--muted); transition: transform 0.2s; }
+.faq-arrow.open { transform: rotate(180deg); }
+
+.office-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.office-features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.office-feat { background: var(--cream); border-radius: 14px; padding: 20px; }
+.office-feat-icon { font-size: 24px; margin-bottom: 8px; }
+.office-feat h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.office-feat p { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+.final-cta { background: var(--g); padding: 80px 32px; text-align: center; }
+.final-cta h2 { font-size: 38px; font-weight: 700; color: white; letter-spacing: -0.5px; margin-bottom: 12px; }
+.final-cta p { font-size: 17px; color: rgba(255,255,255,0.75); margin-bottom: 32px; }
+.cta-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.cta-white { background: white; color: var(--g-dark); padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; transition: all 0.15s; }
+.cta-white:hover { transform: translateY(-1px); }
+.cta-outline-white { background: transparent; color: white; padding: 14px 28px; border-radius: 10px; font-weight: 500; font-size: 15px; border: 2px solid rgba(255,255,255,0.4); cursor: pointer; transition: all 0.15s; }
+.cta-outline-white:hover { border-color: white; }
+
+footer { background: var(--char); padding: 48px 32px 24px; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+.footer-brand h3 { font-size: 22px; font-weight: 700; color: var(--g); margin-bottom: 10px; }
+.footer-brand p { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.6; max-width: 240px; }
+.footer-col h4 { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+.footer-col a { display: block; font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 8px; text-decoration: none; cursor: pointer; transition: color 0.15s; }
+.footer-col a:hover { color: rgba(255,255,255,0.9); }
+.footer-bottom { border-top: 0.5px solid rgba(255,255,255,0.08); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-bottom p { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+.dashboard-header { background: var(--char); padding: 32px; color: white; }
+.dash-welcome { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.dash-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
+.dash-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 32px; background: var(--cream); }
+.dash-stat { background: white; border-radius: 14px; padding: 20px; border: 0.5px solid var(--border); }
+.dash-stat-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.dash-stat-value { font-size: 24px; font-weight: 700; color: var(--text); }
+.dash-stat-value.green { color: var(--g-dark); }
+.dash-stat-value.orange { color: var(--orange); }
+.dash-body { display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 24px 32px; }
+.dash-card { background: white; border-radius: 16px; border: 0.5px solid var(--border); padding: 24px; margin-bottom: 20px; }
+.dash-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.order-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+.order-row:last-child { border-bottom: none; }
+.order-emoji { font-size: 24px; }
+.order-info { flex: 1; }
+.order-name { font-size: 14px; font-weight: 500; }
+.order-date { font-size: 12px; color: var(--muted); }
+.order-status { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
+.status-upcoming { background: #eef3ff; color: #3455c7; }
+.status-delivered { background: var(--g-light); color: var(--g-dark); }
+.wallet-balance { background: var(--char); border-radius: 16px; padding: 24px; color: white; margin-bottom: 16px; }
+.wallet-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+.wallet-amount { font-size: 36px; font-weight: 700; color: white; }
+.wallet-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+.wallet-btn { width: 100%; background: var(--g); color: white; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.points-bar { height: 8px; background: rgba(0,0,0,0.08); border-radius: 4px; margin: 12px 0; overflow: hidden; }
+.points-fill { height: 100%; background: var(--g); border-radius: 4px; }
+.promo-banner { background: var(--orange-light); border: 1px solid rgba(255,138,61,0.25); border-radius: 12px; padding: 14px 16px; display: flex; gap: 10px; align-items: center; }
+.promo-text { font-size: 13px; color: var(--text); }
+.promo-text strong { color: var(--orange); font-weight: 700; }
+
+.about-hero { background: var(--cream); padding: 72px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.about-hero h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px; }
+.about-hero p { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.team-card { text-align: center; }
+.team-avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: white; }
+.team-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.team-role { font-size: 13px; color: var(--muted); }
+
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 960px; margin: 0 auto; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--muted); }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 10px 14px; border: 0.5px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--text); background: white; outline: none; font-family: inherit; transition: border-color 0.15s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--g); }
+.form-textarea { height: 120px; resize: vertical; }
+.submit-btn { background: var(--g); color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.submit-btn:hover { background: var(--g-dark); }
+.contact-info { display: flex; flex-direction: column; gap: 20px; }
+.contact-item { display: flex; gap: 14px; align-items: flex-start; }
+.contact-icon { width: 40px; height: 40px; background: var(--g-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.contact-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.contact-item p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+@media (max-width: 700px) {
+.hero h1 { font-size: 32px; }
+.ai-section, .office-grid, .about-hero, .contact-grid, .footer-grid { grid-template-columns: 1fr; }
+.dash-stats { grid-template-columns: repeat(2, 1fr); }
+.dash-body { grid-template-columns: 1fr; }
+.nav-links { display: none; }
+.team-grid { grid-template-columns: 1fr; }
+.office-features { grid-template-columns: 1fr; }
+.footer-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+<div class="logo">Savr<span>Meals</span></div>
+<div class="nav-links">
+<a onclick="showPage('home')">Home</a>
+<a onclick="showPage('menu')">Menu</a>
+<a onclick="showPage('pricing')">Pricing</a>
+<a onclick="showPage('office')">For Teams</a>
+<a onclick="showPage('about')">About</a>
+<a onclick="showPage('contact')">Contact</a>
+<a onclick="showPage('dashboard')" style="color: var(--g); font-weight: 500;">Dashboard</a>
+</div>
+<button class="nav-cta" onclick="showPage('menu')">Pre-Order Now</button>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+<div class="urgency">
+<span>⏰</span>
+<span>Order by <strong>2:00 PM</strong> today for tomorrow's discount — </span>
+<span class="countdown" id="countdown">03:42:17</span>
+<span> left to save 20%</span>
+</div>
+
+<div class="hero">
+<div class="hero-badge">✦ AI-Powered Meal Planning</div>
+<h1>Eat <em>Smart.</em><br>Pay Less. Every Day.</h1>
+<p>Pre-order meals crafted for your taste and budget. Save up to 40% with plans, packs, and prepaid credits — all personalized by your AI food companion.</p>
+<div class="hero-btns">
+<button class="btn-primary" onclick="showPage('menu')">Build My Meal Plan →</button>
+<button class="btn-secondary" onclick="showPage('pricing')">See Membership Savings</button>
+</div>
+<div class="hero-stats">
+<div class="stat"><div class="stat-num">40%</div><div class="stat-label">Avg. savings vs. eating out</div></div>
+<div class="stat"><div class="stat-num">2,400+</div><div class="stat-label">Happy customers</div></div>
+<div class="stat"><div class="stat-num">5 min</div><div class="stat-label">To set up your plan</div></div>
+<div class="stat"><div class="stat-num">$0</div><div class="stat-label">Subscription to start</div></div>
+</div>
+</div>
+
+<div class="section">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="section-label">How it works</div>
+<div class="section-title">Smarter meals in 4 steps</div>
+<div class="section-sub">Pre-ordering saves you time, money, and decision fatigue — all powered by your personal AI food assistant.</div>
+<div class="steps">
+<div class="step-card"><div class="step-num">1</div><h3>Tell us your preferences</h3><p>Set your dietary needs, budget, family size, and favorite cuisines in under 5 minutes.</p></div>
+<div class="step-card"><div class="step-num">2</div><h3>AI learns & recommends</h3><p>Your SavrBot studies your patterns, tracks promotions, and curates daily meal picks just for you.</p></div>
+<div class="step-card"><div class="step-num">3</div><h3>Pre-order 24hrs ahead</h3><p>Lock in tomorrow's meals before the 2 PM cutoff to unlock lower prices and priority preparation.</p></div>
+<div class="step-card"><div class="step-num">4</div><h3>Pick up or get it delivered</h3><p>Choose convenient pickup or third-party delivery. Track your order in real time.</p></div>
+</div>
+</div>
+</div>
+
+<div class="section section-alt">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="section-label">Why SavrMeals</div>
+<div class="section-title">Built for how you actually live</div>
+<div class="section-sub">Whether you're working from home, feeding a family, or running an office — we built this for you.</div>
+<div class="benefits">
+<div class="benefit"><div class="benefit-icon" style="background:#e8f9f0;">💰</div><div><h4>Save up to 40%</h4><p>Pre-ordering eliminates food waste and lets us pass the savings directly to you every day.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#fff3eb;">⚡</div><div><h4>Zero daily decisions</h4><p>Your AI bot handles the daily what-to-eat question before you even wake up.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#eef3ff;">🎯</div><div><h4>Perfectly personalized</h4><p>Every recommendation matches your taste, allergies, calorie goals, and budget automatically.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#fdf0fb;">👨‍👩‍👧</div><div><h4>Feeds the whole family</h4><p>Family trays, kid-friendly options, and group bundles that make mealtime effortless.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#e8f9f0;">🏢</div><div><h4>Built for offices too</h4><p>Recurring team lunch plans, group ordering, and employee meal benefit management.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#fff3eb;">🎁</div><div><h4>Earn rewards</h4><p>Get SavrPoints on every order. Redeem for free meals, upgrades, and exclusive discounts.</p></div></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="section-label">Today's featured meals</div>
+<div class="section-title">Pre-order tomorrow's favorites</div>
+<div class="filters">
+<button class="filter-btn active">All</button>
+<button class="filter-btn">Healthy</button>
+<button class="filter-btn">Family</button>
+<button class="filter-btn">Budget</button>
+<button class="filter-btn">Vegetarian</button>
+</div>
+<div class="meal-grid">
+<div class="meal-card"><div class="meal-img" style="background:#e8f9f0;">🥗</div><div class="meal-info"><span class="meal-tag tag-healthy">Healthy</span><div class="meal-name">Mediterranean Bowl</div><div class="meal-desc">Falafel, hummus, tabbouleh, cucumber</div><div class="meal-footer"><div><span class="meal-price">$8.50</span><span class="meal-original">$11</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card"><div class="meal-img" style="background:#fff5ee;">🍗</div><div class="meal-info"><span class="meal-tag tag-family">Family</span><div class="meal-name">Rotisserie Chicken Tray</div><div class="meal-desc">Serves 4, roasted veggies, bread rolls</div><div class="meal-footer"><div><span class="meal-price">$32.00</span><span class="meal-original">$44</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card"><div class="meal-img" style="background:#eef3ff;">🍜</div><div class="meal-info"><span class="meal-tag tag-budget">Budget</span><div class="meal-name">Hearty Lentil Soup</div><div class="meal-desc">Protein-packed, warm, with crusty roll</div><div class="meal-footer"><div><span class="meal-price">$5.50</span><span class="meal-original">$7</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card"><div class="meal-img" style="background:#fdf0fb;">🌮</div><div class="meal-info"><span class="meal-tag tag-special">Daily Special</span><div class="meal-name">Street Taco Trio</div><div class="meal-desc">Birria-style, pickled onion, cilantro</div><div class="meal-footer"><div><span class="meal-price">$9.00</span><span class="meal-original">$13</span></div><button class="add-btn">+</button></div></div></div>
+</div>
+<div style="text-align: center; margin-top: 32px;"><button class="btn-primary" onclick="showPage('menu')">View Full Menu →</button></div>
+</div>
+</div>
+
+<div class="section section-alt">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="ai-section">
+<div>
+<div class="section-label" style="color:#6edda0;">Meet your AI food companion</div>
+<h2>SavrBot knows what you want before you do</h2>
+<p>Our built-in AI assistant learns your taste profile, tracks your spending habits, and automatically recommends the best meals and deals tailored just for you — every single day.</p>
+<div class="ai-features">
+<div class="ai-feat"><div class="ai-check">✓</div>Learns your flavor preferences over time</div>
+<div class="ai-feat"><div class="ai-check">✓</div>Tracks your monthly food budget automatically</div>
+<div class="ai-feat"><div class="ai-check">✓</div>Alerts you to personalized daily deals</div>
+<div class="ai-feat"><div class="ai-check">✓</div>Remembers dietary restrictions & allergies</div>
+<div class="ai-feat"><div class="ai-check">✓</div>Suggests reorders for your past favorites</div>
+</div>
+</div>
+<div class="chat-widget">
+<div class="chat-header">
+<div class="bot-avatar">🤖</div>
+<div><div class="chat-name">SavrBot</div><div class="chat-status">● Online now</div></div>
+</div>
+<div class="chat-bubble">Hey! Based on your history, I found 3 meals you'll love tomorrow — all within your $10 budget. Want me to pre-order them?</div>
+<div class="chat-bubble user">Yes, and make sure one is vegetarian!</div>
+<div class="chat-bubble">Done! I've queued the Mediterranean Bowl, Spiced Lentil Tray, and a Veggie Stir-Fry for pickup at noon. You'll save $6.50 vs. ordering same-day. 🎉</div>
+<div class="chat-suggestions">
+<span class="chat-sug">See tomorrow's deals</span>
+<span class="chat-sug">Change my budget</span>
+<span class="chat-sug">Family meals</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="section-label">Membership savings</div>
+<div class="section-title">The more you plan, the more you save</div>
+<div class="section-sub">From single meals to full office plans — every tier unlocks more savings on top of pre-order prices.</div>
+<div class="pricing-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+<div class="price-card"><div class="plan-name">Single meal</div><div class="plan-price"><sup>$</sup>7<sub>–12/meal</sub></div><div class="plan-savings">Base price</div><ul class="plan-features"><li>Pre-order discount</li><li>Pickup or delivery</li><li>SavrPoints earned</li></ul><button class="plan-btn outline" onclick="showPage('menu')">Order now</button></div>
+<div class="price-card"><div class="plan-name">5-meal pack</div><div class="plan-price"><sup>$</sup>44<sub>/week</sub></div><div class="plan-savings">Save 10%</div><ul class="plan-features"><li>All single benefits</li><li>10% off each meal</li><li>Flexible scheduling</li></ul><button class="plan-btn outline" onclick="showPage('pricing')">Get pack</button></div>
+<div class="price-card featured"><div class="popular-badge">Most popular</div><div class="plan-name">Gold membership</div><div class="plan-price"><sup>$</sup>79<sub>/month</sub></div><div class="plan-savings">Save up to 30%</div><ul class="plan-features"><li>Unlimited pre-orders</li><li>30% off all meals</li><li>Priority SavrBot</li><li>1 free meal/week</li></ul><button class="plan-btn primary" onclick="showPage('pricing')">Start saving</button></div>
+<div class="price-card"><div class="plan-name">Office plan</div><div class="plan-price"><sup>$</sup>199<sub>/month</sub></div><div class="plan-savings">Save 35%+</div><ul class="plan-features"><li>Up to 20 employees</li><li>Group ordering</li><li>Admin dashboard</li><li>Custom menus</li></ul><button class="plan-btn outline" onclick="showPage('office')">For teams</button></div>
+</div>
+</div>
+</div>
+
+<div class="section section-alt">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="office-grid">
+<div>
+<div class="section-label">For families & teams</div>
+<div class="section-title">Feed everyone, stress-free</div>
+<p style="font-size:16px;color:var(--muted);line-height:1.6;margin-bottom:28px;">Whether it's a family of four or a team of forty, SavrMeals handles the logistics so you don't have to. Family trays, recurring office lunches, and group bundles — all pre-planned and discounted.</p>
+<button class="btn-primary" onclick="showPage('office')">See office solutions →</button>
+</div>
+<div class="office-features">
+<div class="office-feat"><div class="office-feat-icon">👨‍👩‍👧</div><h4>Family trays</h4><p>Feeds 4–6. Ready for pickup at dinner time.</p></div>
+<div class="office-feat"><div class="office-feat-icon">🏢</div><h4>Team lunches</h4><p>Recurring plans with group ordering portal.</p></div>
+<div class="office-feat"><div class="office-feat-icon">📅</div><h4>Weekly scheduling</h4><p>Set it once, eat well all week automatically.</p></div>
+<div class="office-feat"><div class="office-feat-icon">💳</div><h4>Meal credits</h4><p>Prepaid wallet for employees or family members.</p></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="section-label">Social proof</div>
+<div class="section-title">Real people, real savings</div>
+<div class="testimonial-grid">
+<div class="testimonial"><div class="stars">★★★★★</div><div class="quote">"I save about $180 a month on lunch alone. SavrBot automatically picks meals I love — I barely have to think about it anymore."</div><div class="author"><div class="avatar" style="background:#2FBF71;">SR</div><div><div class="author-name">Sarah R.</div><div class="author-role">Remote worker, Tampa FL</div></div></div></div>
+<div class="testimonial"><div class="stars">★★★★★</div><div class="quote">"We set up the office plan for our 12-person team and cut our lunch budget by 35%. The group ordering portal is incredibly easy to use."</div><div class="author"><div class="avatar" style="background:#FF8A3D;">MK</div><div><div class="author-name">Mike K.</div><div class="author-role">Operations Manager</div></div></div></div>
+<div class="testimonial"><div class="stars">★★★★★</div><div class="quote">"As a mom of three, the family tray option is a lifesaver. Pre-ordering Sunday night means dinner is handled all week. Absolute game changer."</div><div class="author"><div class="avatar" style="background:#7F77DD;">LM</div><div><div class="author-name">Lisa M.</div><div class="author-role">Working parent</div></div></div></div>
+</div>
+</div>
+</div>
+
+<div class="section section-alt">
+<div style="max-width: 640px; margin: 0 auto;">
+<div class="section-label">FAQ</div>
+<div class="section-title">Common questions</div>
+<div id="faq">
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(0)"><span>How far in advance do I need to order?</span><span class="faq-arrow" id="arr0">▾</span></div><div class="faq-a" id="faq0">Orders must be placed at least 24 hours in advance. The daily cutoff is 2:00 PM — orders placed before 2 PM unlock the next-day pre-order discount automatically.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(1)"><span>Can I change or cancel my pre-order?</span><span class="faq-arrow" id="arr1">▾</span></div><div class="faq-a" id="faq1">Yes! You can modify or cancel your order up to 4 hours before your scheduled pickup or delivery time, free of charge.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(2)"><span>How does the prepaid wallet work?</span><span class="faq-arrow" id="arr2">▾</span></div><div class="faq-a" id="faq2">Add credits to your SavrWallet and use them for any order. Wallet credits earn an extra 5% bonus on every reload — it's the cheapest way to pay per meal.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(3)"><span>Is there a minimum commitment?</span><span class="faq-arrow" id="arr3">▾</span></div><div class="faq-a" id="faq3">No! You can order single meals with no subscription. Memberships are month-to-month with no lock-in. Cancel anytime from your dashboard.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(4)"><span>What areas do you deliver to?</span><span class="faq-arrow" id="arr4">▾</span></div><div class="faq-a" id="faq4">We currently serve the Tampa Bay area including Brandon, Tampa, St. Pete, and Clearwater. Pickup locations are available at multiple spots. Delivery is via third-party partners (DoorDash, UberEats).</div></div>
+</div>
+</div>
+</div>
+
+<div class="final-cta">
+<h2>Start saving on every meal today</h2>
+<p>Join 2,400+ smart eaters who pre-plan, save money, and eat better with SavrMeals.</p>
+<div class="cta-group">
+<button class="cta-white" onclick="showPage('menu')">Build My Meal Plan</button>
+<button class="cta-outline-white" onclick="showPage('pricing')">View Membership Plans</button>
+</div>
+</div>
+</div>
+
+<!-- MENU PAGE -->
+<div id="page-menu" class="page">
+<div class="section">
+<div style="max-width: 960px; margin: 0 auto;">
+<div class="section-label">Our menu</div>
+<div class="section-title">Pre-order tomorrow's meals</div>
+<div class="section-sub">All prices shown are pre-order prices. Same-day walk-in pricing is higher — always order ahead to lock in your savings.</div>
+<div class="filters" id="menu-filters">
+<button class="filter-btn active" onclick="filterMenu('all', this)">All</button>
+<button class="filter-btn" onclick="filterMenu('healthy', this)">Healthy</button>
+<button class="filter-btn" onclick="filterMenu('family', this)">Family</button>
+<button class="filter-btn" onclick="filterMenu('budget', this)">Budget</button>
+<button class="filter-btn" onclick="filterMenu('vegetarian', this)">Vegetarian</button>
+<button class="filter-btn" onclick="filterMenu('office', this)">Office Packs</button>
+</div>
+<div class="meal-grid" id="menu-grid">
+<div class="meal-card" data-cat="healthy"><div class="meal-img" style="background:#e8f9f0;">🥗</div><div class="meal-info"><span class="meal-tag tag-healthy">Healthy</span><div class="meal-name">Mediterranean Bowl</div><div class="meal-desc">Falafel, hummus, tabbouleh, cucumber</div><div class="meal-footer"><div><span class="meal-price">$8.50</span><span class="meal-original">$11</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="healthy vegetarian"><div class="meal-img" style="background:#eaf8ef;">🥦</div><div class="meal-info"><span class="meal-tag tag-healthy">Healthy</span><div class="meal-name">Veggie Stir-Fry Bowl</div><div class="meal-desc">Seasonal veggies, tofu, ginger sauce, rice</div><div class="meal-footer"><div><span class="meal-price">$7.50</span><span class="meal-original">$10</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="family"><div class="meal-img" style="background:#fff5ee;">🍗</div><div class="meal-info"><span class="meal-tag tag-family">Family</span><div class="meal-name">Rotisserie Chicken Tray</div><div class="meal-desc">Serves 4, roasted veggies, bread rolls</div><div class="meal-footer"><div><span class="meal-price">$32.00</span><span class="meal-original">$44</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="family"><div class="meal-img" style="background:#fff0f0;">🍝</div><div class="meal-info"><span class="meal-tag tag-family">Family</span><div class="meal-name">Baked Pasta Family Tray</div><div class="meal-desc">Serves 6, ricotta, marinara, garlic bread</div><div class="meal-footer"><div><span class="meal-price">$28.00</span><span class="meal-original">$38</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="budget"><div class="meal-img" style="background:#eef3ff;">🍜</div><div class="meal-info"><span class="meal-tag tag-budget">Budget</span><div class="meal-name">Hearty Lentil Soup</div><div class="meal-desc">Protein-packed, warm, with crusty roll</div><div class="meal-footer"><div><span class="meal-price">$5.50</span><span class="meal-original">$7</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="budget vegetarian"><div class="meal-img" style="background:#f0f4ff;">🥙</div><div class="meal-info"><span class="meal-tag tag-budget">Budget</span><div class="meal-name">Bean & Rice Burrito Bowl</div><div class="meal-desc">Black beans, cilantro rice, pico de gallo</div><div class="meal-footer"><div><span class="meal-price">$6.00</span><span class="meal-original">$8.50</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="office"><div class="meal-img" style="background:#f5f5f5;">🍱</div><div class="meal-info"><span class="meal-tag" style="background:#f1f0fe;color:#6c5fba;">Office Pack</span><div class="meal-name">Team Lunch Box ×10</div><div class="meal-desc">10 assorted boxes, mixed protein options</div><div class="meal-footer"><div><span class="meal-price">$75.00</span><span class="meal-original">$110</span></div><button class="add-btn">+</button></div></div></div>
+<div class="meal-card" data-cat="healthy"><div class="meal-img" style="background:#fef9e7;">🐟</div><div class="meal-info"><span class="meal-tag tag-healthy">Healthy</span><div class="meal-name">Grilled Salmon Plate</div><div class="meal-desc">Lemon herb salmon, quinoa, asparagus</div><div class="meal-footer"><div><span class="meal-price">$11.00</span><span class="meal-original">$15</span></div><button class="add-btn">+</button></div></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PRICING PAGE -->
+<div id="page-pricing" class="page">
+<div class="section">
+<div style="max-width: 960px; margin: 0 auto;">
+<div style="text-align: center; margin-bottom: 48px;">
+<div class="section-label">Pricing & membership</div>
+<div class="section-title">Save more as you commit more</div>
+<p style="font-size:16px;color:var(--muted);max-width:480px;margin:0 auto;">Every plan includes the core pre-order discount. Memberships stack additional savings on top.</p>
+</div>
+<div class="pricing-grid">
+<div class="price-card"><div class="plan-name">Single meal</div><div class="plan-price"><sup>$</sup>7–12<sub>/meal</sub></div><div class="plan-savings">Pre-order discount applied</div><ul class="plan-features"><li>24hr pre-order pricing</li><li>Pickup or delivery</li><li>SavrPoints on every order</li><li>SavrBot recommendations</li></ul><button class="plan-btn outline" onclick="showPage('menu')">Order now</button></div>
+<div class="price-card"><div class="plan-name">5-meal pack</div><div class="plan-price"><sup>$</sup>44<sub>/week</sub></div><div class="plan-savings">Save 10% per meal</div><ul class="plan-features"><li>All single meal benefits</li><li>Mix & match meals</li><li>Flexible days</li><li>Free pickup</li></ul><button class="plan-btn outline">Get pack</button></div>
+<div class="price-card"><div class="plan-name">10-meal pack</div><div class="plan-price"><sup>$</sup>82<sub>/2 weeks</sub></div><div class="plan-savings">Save 18% per meal</div><ul class="plan-features"><li>All 5-pack benefits</li><li>Priority preparation</li><li>Rollover unused meals</li><li>Dedicated support</li></ul><button class="plan-btn outline">Get pack</button></div>
+<div class="price-card"><div class="plan-name">Silver</div><div class="plan-price"><sup>$</sup>39<sub>/month</sub></div><div class="plan-savings">Save 15% on all meals</div><ul class="plan-features"><li>15% off every meal</li><li>Early access to specials</li><li>2x SavrPoints</li><li>Cancel anytime</li></ul><button class="plan-btn outline">Start Silver</button></div>
+<div class="price-card featured"><div class="popular-badge">Most popular</div><div class="plan-name">Gold</div><div class="plan-price"><sup>$</sup>79<sub>/month</sub></div><div class="plan-savings">Save 30% on all meals</div><ul class="plan-features"><li>30% off every meal</li><li>1 free meal per week</li><li>3x SavrPoints</li><li>Priority SavrBot AI</li><li>Free delivery 2×/week</li></ul><button class="plan-btn primary">Start saving today</button></div>
+<div class="price-card"><div class="plan-name">Platinum</div><div class="plan-price"><sup>$</sup>129<sub>/month</sub></div><div class="plan-savings">Save 40%+ on all meals</div><ul class="plan-features"><li>40% off all meals</li><li>2 free meals per week</li><li>5x SavrPoints</li><li>Unlimited free delivery</li><li>Personal meal concierge</li></ul><button class="plan-btn outline">Go Platinum</button></div>
+</div>
+<div style="margin-top:48px;background:var(--cream);border-radius:16px;padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;">
+<div>
+<h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">SavrWallet — Prepaid Credits</h3>
+<p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px;">Load credits into your wallet and get a bonus on every reload. It's the most flexible way to save — no commitment required.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+<div style="background:white;border-radius:12px;padding:16px;text-align:center;border:0.5px solid var(--border);"><div style="font-size:18px;font-weight:700;">$25</div><div style="font-size:11px;color:var(--g-dark);font-weight:600;margin-top:4px;">+$0 bonus</div></div>
+<div style="background:white;border-radius:12px;padding:16px;text-align:center;border:2px solid var(--g);"><div style="font-size:18px;font-weight:700;">$50</div><div style="font-size:11px;color:var(--g-dark);font-weight:600;margin-top:4px;">+$3 bonus</div></div>
+<div style="background:white;border-radius:12px;padding:16px;text-align:center;border:0.5px solid var(--border);"><div style="font-size:18px;font-weight:700;">$100</div><div style="font-size:11px;color:var(--g-dark);font-weight:600;margin-top:4px;">+$8 bonus</div></div>
+</div>
+</div>
+<div>
+<h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">Referral & Rewards</h3>
+<p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px;">Refer a friend and you both get a free meal. Earn SavrPoints on every order and redeem them for discounts.</p>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div style="background:white;border-radius:10px;padding:12px 16px;border:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">Per referral</span><strong style="color:var(--g);font-size:14px;">1 free meal each</strong></div>
+<div style="background:white;border-radius:10px;padding:12px 16px;border:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">SavrPoints rate</span><strong style="color:var(--g);font-size:14px;">10 pts per $1 spent</strong></div>
+<div style="background:white;border-radius:10px;padding:12px 16px;border:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">Redeem threshold</span><strong style="color:var(--g);font-size:14px;">500 pts = $5 credit</strong></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- OFFICE PAGE -->
+<div id="page-office" class="page">
+<div style="background:var(--char);padding:72px 32px;text-align:center;">
+<div style="max-width:600px;margin:0 auto;">
+<div style="font-size:12px;font-weight:600;color:var(--g);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">For teams & offices</div>
+<h1 style="font-size:42px;font-weight:700;color:white;letter-spacing:-0.5px;margin-bottom:16px;">Lunch, handled for your whole team</h1>
+<p style="font-size:17px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:32px;">Recurring meal plans, group ordering, employee meal benefits, and a dedicated admin dashboard — all at 35% off standard pricing.</p>
+<button class="btn-primary" style="font-size:16px;padding:16px 32px;" onclick="showPage('contact')">Get a Team Quote →</button>
+</div>
+</div>
+<div class="section">
+<div style="max-width:960px;margin:0 auto;">
+<div class="section-title">Everything your office needs</div>
+<div class="benefits" style="margin-bottom:48px;">
+<div class="benefit"><div class="benefit-icon" style="background:#e8f9f0;">📅</div><div><h4>Recurring weekly plans</h4><p>Set your team's meal schedule once. SavrMeals handles pre-orders, prep, and delivery automatically every week.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#fff3eb;">👥</div><div><h4>Group ordering portal</h4><p>Each team member picks their own meal from a shared order. No more collecting requests via Slack.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#eef3ff;">💳</div><div><h4>Employee meal benefits</h4><p>Issue prepaid meal credits to employees. They spend freely within budget — you control the cap.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#fdf0fb;">📊</div><div><h4>Admin dashboard</h4><p>Track spend per employee, see order history, adjust budgets, and download reports in one place.</p></div></div>
+</div>
+<div style="background:var(--cream);border-radius:20px;padding:40px;text-align:center;">
+<div class="section-title" style="margin-bottom:8px;">Office plan pricing</div>
+<p style="color:var(--muted);font-size:15px;margin-bottom:32px;">Flat monthly pricing. No per-meal surprises.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+<div style="background:white;border-radius:16px;padding:28px;border:0.5px solid var(--border);"><div style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px;">STARTER</div><div style="font-size:32px;font-weight:700;margin-bottom:4px;">$99<span style="font-size:14px;font-weight:400;color:var(--muted)">/mo</span></div><div style="font-size:13px;color:var(--muted);">Up to 5 employees</div></div>
+<div style="background:white;border-radius:16px;padding:28px;border:2px solid var(--g);"><div style="font-size:13px;color:var(--g-dark);font-weight:600;margin-bottom:8px;">TEAM</div><div style="font-size:32px;font-weight:700;margin-bottom:4px;">$199<span style="font-size:14px;font-weight:400;color:var(--muted)">/mo</span></div><div style="font-size:13px;color:var(--muted);">Up to 20 employees</div></div>
+<div style="background:white;border-radius:16px;padding:28px;border:0.5px solid var(--border);"><div style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px;">ENTERPRISE</div><div style="font-size:32px;font-weight:700;margin-bottom:4px;">Custom</div><div style="font-size:13px;color:var(--muted);">20+ employees</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="page-about" class="page">
+<div class="about-hero">
+<div>
+<div class="section-label">Our story</div>
+<h1>We built SavrMeals because eating well shouldn't be expensive or complicated</h1>
+<p>It started with a simple question: why do people who plan ahead pay the same — or more — than people who decide last minute? That's backwards. Food should reward smart planning.</p>
+<p>SavrMeals is a smart prepaid meal platform built around one core idea: by knowing what people want before we cook it, we eliminate waste, cut costs, and pass the savings directly to our customers.</p>
+</div>
+<div style="background:var(--char);border-radius:24px;padding:40px;color:white;">
+<div style="font-size:40px;font-weight:700;color:var(--g);margin-bottom:4px;">$2.1M</div>
+<div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px;">Saved by our customers this year</div>
+<div style="font-size:40px;font-weight:700;color:var(--orange);margin-bottom:4px;">2,400+</div>
+<div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px;">Active meal planners</div>
+<div style="font-size:40px;font-weight:700;color:white;margin-bottom:4px;">92%</div>
+<div style="font-size:14px;color:rgba(255,255,255,0.5);">Customer satisfaction rate</div>
+</div>
+</div>
+<div class="section section-alt">
+<div style="max-width:960px;margin:0 auto;">
+<div class="section-label">Our values</div>
+<div class="section-title">What we believe</div>
+<div class="benefits">
+<div class="benefit"><div class="benefit-icon" style="background:#e8f9f0;">🧠</div><div><h4>Planning is power</h4><p>When people know what they're eating tomorrow, they make better choices and spend less. We make planning effortless.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#fff3eb;">🌱</div><div><h4>Less waste, more value</h4><p>Pre-ordering means we cook only what's needed. Less food waste means lower costs — and a healthier planet.</p></div></div>
+<div class="benefit"><div class="benefit-icon" style="background:#eef3ff;">🤝</div><div><h4>Fair pricing for everyone</h4><p>Whether you're feeding yourself on a budget or running a company cafeteria, you deserve excellent food at an honest price.</p></div></div>
+</div>
+</div>
+</div>
+<div class="section">
+<div style="max-width:960px;margin:0 auto;">
+<div class="section-label">Leadership</div>
+<div class="section-title">The team behind SavrMeals</div>
+<div class="team-grid">
+<div class="team-card"><div class="team-avatar" style="background:#2FBF71;">JA</div><div class="team-name">Jordan Alvarez</div><div class="team-role">CEO & Co-founder</div></div>
+<div class="team-card"><div class="team-avatar" style="background:#FF8A3D;">PT</div><div class="team-name">Priya Thomas</div><div class="team-role">CTO & AI Lead</div></div>
+<div class="team-card"><div class="team-avatar" style="background:#7F77DD;">DW</div><div class="team-name">Derek Wills</div><div class="team-role">Head of Operations</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CONTACT PAGE -->
+<div id="page-contact" class="page">
+<div class="section">
+<div style="max-width:960px;margin:0 auto;">
+<div class="section-label">Contact & support</div>
+<div class="section-title">We're here to help</div>
+<div class="contact-grid">
+<div>
+<div class="form-group"><label class="form-label">Your name</label><input class="form-input" placeholder="Full name" /></div>
+<div class="form-group"><label class="form-label">Email address</label><input class="form-input" type="email" placeholder="you@example.com" /></div>
+<div class="form-group"><label class="form-label">Inquiry type</label><select class="form-select"><option>General question</option><option>Order support</option><option>Membership inquiry</option><option>Office / team plan</option><option>Partnership inquiry</option><option>Press & media</option></select></div>
+<div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell us how we can help..."></textarea></div>
+<button class="submit-btn">Send Message</button>
+</div>
+<div class="contact-info">
+<div class="contact-item"><div class="contact-icon">📍</div><div><h4>Pickup locations</h4><p>Brandon Town Center<br>Westfield Mall — Tampa<br>Downtown St. Pete Hub</p></div></div>
+<div class="contact-item"><div class="contact-icon">🕐</div><div><h4>Pre-order cutoff</h4><p>Daily at 2:00 PM for next-day orders. Weekend orders accepted until Friday 2 PM.</p></div></div>
+<div class="contact-item"><div class="contact-icon">🚗</div><div><h4>Delivery</h4><p>Available via DoorDash and UberEats. Delivery fees apply unless on Gold+ membership.</p></div></div>
+<div class="contact-item"><div class="contact-icon">💬</div><div><h4>Live chat support</h4><p>Chat with SavrBot or a live agent Mon–Fri 8am–8pm, weekends 9am–5pm.</p></div></div>
+<div style="background:var(--g-light);border-radius:14px;padding:20px;border:1px solid rgba(47,191,113,0.2);">
+<div style="font-size:14px;font-weight:600;color:var(--g-dark);margin-bottom:6px;">🤖 Chat with SavrBot</div>
+<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">Get instant answers about orders, menus, and your account — available 24/7.</div>
+<button style="background:var(--g);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;">Open SavrBot Chat</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard" class="page">
+<div class="dashboard-header">
+<div style="max-width:960px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+<div><div class="dash-welcome">Good afternoon, Sarah 👋</div><div class="dash-sub">Your next pre-order cutoff is in 3 hrs 42 min</div></div>
+<button class="btn-primary" onclick="showPage('menu')">Pre-Order Meals →</button>
+</div>
+</div>
+<div class="dash-stats">
+<div class="dash-stat"><div class="dash-stat-label">This month's savings</div><div class="dash-stat-value green">$87.50</div></div>
+<div class="dash-stat"><div class="dash-stat-label">Meals ordered</div><div class="dash-stat-value">18</div></div>
+<div class="dash-stat"><div class="dash-stat-label">SavrPoints balance</div><div class="dash-stat-value orange">1,240 pts</div></div>
+<div class="dash-stat"><div class="dash-stat-label">Current membership</div><div class="dash-stat-value" style="font-size:16px;color:var(--g-dark);font-weight:700;">● Gold</div></div>
+</div>
+<div class="dash-body">
+<div>
+<div class="promo-banner" style="margin-bottom:20px;"><span style="font-size:20px;">🎉</span><div class="promo-text">You've saved <strong>$87.50</strong> this month! Invite a friend and you both get a <strong>free meal</strong>. Share your code: <strong>SARAH40</strong></div></div>
+<div class="dash-card">
+<h3>Upcoming orders</h3>
+<div class="order-row"><div class="order-emoji">🥗</div><div class="order-info"><div class="order-name">Mediterranean Bowl</div><div class="order-date">Tomorrow, Apr 12 — Pickup 12:00 PM</div></div><span class="order-status status-upcoming">Upcoming</span></div>
+<div class="order-row"><div class="order-emoji">🍗</div><div class="order-info"><div class="order-name">Rotisserie Chicken Tray</div><div class="order-date">Tuesday, Apr 13 — Delivery</div></div><span class="order-status status-upcoming">Upcoming</span></div>
+</div>
+<div class="dash-card">
+<h3>Past orders</h3>
+<div class="order-row"><div class="order-emoji">🌮</div><div class="order-info"><div class="order-name">Street Taco Trio</div><div class="order-date">Apr 10 — Pickup 1:00 PM</div></div><span class="order-status status-delivered">Delivered</span></div>
+<div class="order-row"><div class="order-emoji">🍜</div><div class="order-info"><div class="order-name">Hearty Lentil Soup</div><div class="order-date">Apr 9 — Pickup 12:30 PM</div></div><span class="order-status status-delivered">Delivered</span></div>
+<div class="order-row"><div class="order-emoji">🥗</div><div class="order-info"><div class="order-name">Mediterranean Bowl</div><div class="order-date">Apr 8 — Pickup 12:00 PM</div></div><span class="order-status status-delivered">Delivered</span></div>
+</div>
+</div>
+<div>
+<div class="wallet-balance">
+<div class="wallet-label">SavrWallet balance</div>
+<div class="wallet-amount">$34.50</div>
+<div class="wallet-sub">+3% bonus on next reload</div>
+<button class="wallet-btn" onclick="showPage('pricing')">Add Credits</button>
+</div>
+<div class="dash-card">
+<h3>SavrPoints — Gold tier</h3>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:4px;"><span>1,240 pts earned</span><span>2,500 pts for free meal</span></div>
+<div class="points-bar"><div class="points-fill" style="width:49%;"></div></div>
+<div style="font-size:12px;color:var(--muted);">1,260 pts away from a free meal redemption</div>
+</div>
+<div class="dash-card">
+<h3>SavrBot recommendation</h3>
+<div style="background:var(--g-light);color:var(--char);border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.5;margin-bottom:12px;">Based on your history, you'll love tomorrow's Grilled Salmon Plate — and it's 28% off with your Gold membership! Shall I add it to your queue?</div>
+<button style="background:var(--g);color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;" onclick="showPage('menu')">Yes, add it →</button>
+</div>
+</div>
+</div>
+</div>
+
+<footer>
+<div style="max-width:960px;margin:0 auto;">
+<div class="footer-grid">
+<div class="footer-brand"><h3>SavrMeals</h3><p>Eat Smart. Pay Less. Pre-order meals personalized for your taste and budget — for individuals, families, and teams.</p></div>
+<div class="footer-col"><h4>Platform</h4><a onclick="showPage('home')">Home</a><a onclick="showPage('menu')">Menu</a><a onclick="showPage('pricing')">Pricing</a><a onclick="showPage('dashboard')">Dashboard</a></div>
+<div class="footer-col"><h4>Company</h4><a onclick="showPage('about')">About</a><a onclick="showPage('office')">For Teams</a><a onclick="showPage('contact')">Contact</a><a>Careers</a></div>
+<div class="footer-col"><h4>Support</h4><a>Order Help</a><a>Pickup Locations</a><a>Delivery Info</a><a>Membership FAQ</a></div>
+</div>
+<div class="footer-bottom"><p>©️ 2025 SavrMeals. All rights reserved.</p><p style="color:rgba(255,255,255,0.3);font-size:12px;">Eat Smart. Pay Less.™️</p></div>
+</div>
+</footer>
+
+<script>
+function showPage(id) {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+var pg = document.getElementById('page-' + id);
+if (pg) { pg.classList.add('active'); window.scrollTo(0, 0); }
+}
+
+var cutoff = new Date();
+cutoff.setHours(14, 0, 0, 0);
+if (new Date() >= cutoff) cutoff.setDate(cutoff.getDate() + 1);
+function updateClock() {
+var diff = cutoff - new Date();
+if (diff <= 0) { document.getElementById('countdown').textContent = 'EXPIRED'; return; }
+var h = Math.floor(diff / 3600000);
+var m = Math.floor((diff % 3600000) / 60000);
+var s = Math.floor((diff % 60000) / 1000);
+document.getElementById('countdown').textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+function toggleFaq(i) {
+var el = document.getElementById('faq' + i);
+var arr = document.getElementById('arr' + i);
+var open = el.classList.contains('open');
+document.querySelectorAll('.faq-a').forEach(function(a){ a.classList.remove('open'); });
+document.querySelectorAll('.faq-arrow').forEach(function(a){ a.classList.remove('open'); });
+if (!open) { el.classList.add('open'); arr.classList.add('open'); }
+}
+
+function filterMenu(cat, btn) {
+document.querySelectorAll('#menu-filters .filter-btn').forEach(function(b){ b.classList.remove('active'); });
+btn.classList.add('active');
+document.querySelectorAll('#menu-grid .meal-card').forEach(function(card) {
+if (cat === 'all') { card.style.display = ''; return; }
+var cats = card.getAttribute('data-cat') || '';
+card.style.display = cats.indexOf(cat) !== -1 ? '' : 'none';
+});
+}
+
+document.querySelectorAll('.filters:not(#menu-filters) .filter-btn').forEach(function(btn) {
+btn.addEventListener('click', function() {
+document.querySelectorAll('.filters:not(#menu-filters) .filter-btn').forEach(function(b){ b.classList.remove('active'); });
+btn.classList.add('active');
+});
+});
+</script>
+</body>
+</html>
+</content>
+</invoke>
